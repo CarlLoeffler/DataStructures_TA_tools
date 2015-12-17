@@ -1,0 +1,49 @@
+Notes for the future me that screwed up the environment and needs to set up
+again
+
+Cygwin with perl and unzip installed is required for any of this to work. Also
+dif and some other general 'nix utilities.
+
+As the entire point is to build the projects using the visual studio
+compiler, one of those is going to be necessary too.
+
+The startup.bat file in the root folder will set the required environment variables
+and then start cygwin. This has two failure points:
+	-You're using a visual studio besides community 2015. Use "set v" in
+cmd to find out what the new environment variable for the compiler path is,
+put that in the batch file.
+	-You've installed cygwin some where besides d:\cygwin64, fix this by
+fixing the cygwin path in the batch file.
+
+unpack.pl: 
+	Usage: unpack.pl <source archive> <destination folder>.
+	First step! Run this before everything else.
+	This will break and need to be rewritten if blackboard change their
+archive format, or cheney changes his submission format. In the meantime, unpacks a gradebook
+.zip to a nested directory structure. <dest> will end up holding a directory
+for each submission made, assuming that everything is a zip archive compatible
+with unzip. Will fail for some submissions because people turn their work in
+wrong - fix it manually and tell them not to do it again.
+
+autobuild.pl: 
+	usage: autobuild.pl <assignment>
+	Run after unpack.pl.
+	Goes through the created directory
+structure, attempting to build each submission and writing compiler output to
+compiler.txt. Simple builds every .cpp file found in submission folder - this
+should be sufficient unless this class does more complicated things than I
+think it does, and conveniently requires literally no work building makefiles
+or similar.
+
+autorun.pl:
+	usage: autorun.pl <assignment> <input> "<diff flags>"
+	Run this last.
+	It runs every exe it finds in the assignment directory
+with every input from the input directory, and compares the output to an
+output file from the same directory. Sample input/output pairs are expected to
+exist as pairs with the same name and .in and .out file extensions
+respectively. Diff flags are formatting flags passed directly to Diff. Program
+output and diff output are both saved in the local submission directory, with
+.out and .diff extensions respectively. I recomend the flags -B (ignore blank
+lines) and -c (context format). -w (ignore whitespace entirely) might be handy
+too, depending.
