@@ -3,6 +3,8 @@
 #Carl Loeffler
 #11/8/15
 
+use Text::Table;
+
 use strict;
 use warnings;
 
@@ -24,6 +26,7 @@ opendir(ASSIGNMENT_ROOT, "$assignment") || die "Can't open directory: $assignmen
 opendir(SAMPLE_INPUTS, "$inputDir") || die "Can't open directory: $inputDir\n";
 
 my $workingDir = getcwd; #so we can return to the original working directory later
+my @report; #so we can have a summary when it's all over
 
 my @inputFiles;
 
@@ -32,6 +35,8 @@ while (my $f = readdir(SAMPLE_INPUTS)){ #build list of sample inputs (this just 
 		push @inputFiles, $f;
 	}
 }
+
+my $tb = Text::Table->new("Folder", "Succesfull runs", "Unsuccessful runs");
 
 while (my $current = readdir(ASSIGNMENT_ROOT)) {
 	if($current eq "." || $current eq ".."){
@@ -45,7 +50,7 @@ while (my $current = readdir(ASSIGNMENT_ROOT)) {
 	}
 
 	print "\n";
-
+	
 	my $foundExe = 0;
 	while(my $f = readdir(CURRENT_SUB)){
 		if(-d $f){
@@ -58,18 +63,21 @@ while (my $current = readdir(ASSIGNMENT_ROOT)) {
 				$input =~ /(.*)[.]in$/;		#retrieve name of input file
 				my $iName = $1;
 				`./$f < ../../$inputDir/$input > $iName.out`;		#actually run the thing
-				`diff ../../$inputDir/$iName.out $iName.out $diffArgs > $iName.diffs`;	#run the diff
+				`diff ../../$inputDir/$iName.out $iName.out $diffArgs > $iName.diffs`;	#run the diff				
+				$foundExe++;		#track that we were able to find something to run
 			}
 			chdir $workingDir;	#go back
-			$foundExe = 1;		#track that we were able to find something to run
 			last;
 		}
 	}
 	if(!$foundExe){
-		print "No exe file found in $current\n";	#if we didn't find an executable to run, report that.
+		print "No exe file found in $current\n";	#if we didn't find an executable 
 	}
+	$tb->load([$current, $foundExe, 0]);
 
 	closedir(CURRENT_SUB);
 }
 closedir(ASSIGNMENT_ROOT);
 closedir(SAMPLE_INPUTS);
+
+print $tb;
