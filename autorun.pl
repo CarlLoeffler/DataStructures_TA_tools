@@ -36,7 +36,7 @@ while (my $f = readdir(SAMPLE_INPUTS)){ #build list of sample inputs (this just 
 	}
 }
 
-my $tb = Text::Table->new("Folder", "Succesfull runs", "Unsuccessful runs");
+my $tb = Text::Table->new("Folder", "Total runs", "Succes", "Failure");
 
 while (my $current = readdir(ASSIGNMENT_ROOT)) {
 	if($current eq "." || $current eq ".."){
@@ -51,7 +51,8 @@ while (my $current = readdir(ASSIGNMENT_ROOT)) {
 
 	print "\n";
 	
-	my $foundExe = 0;
+	my $runSucc = 0;
+	my $runFail = 0;
 	while(my $f = readdir(CURRENT_SUB)){
 		if(-d $f){
 			next;
@@ -63,17 +64,24 @@ while (my $current = readdir(ASSIGNMENT_ROOT)) {
 				$input =~ /(.*)[.]in$/;		#retrieve name of input file
 				my $iName = $1;
 				`./$f < ../../$inputDir/$input > $iName.out`;		#actually run the thing
-				`diff ../../$inputDir/$iName.out $iName.out $diffArgs > $iName.diffs`;	#run the diff				
-				$foundExe++;		#track that we were able to find something to run
+				
+				#log if run exited cleanly
+				if(${^CHILD_ERROR_NATIVE} != 0){
+					$runFail++;
+				}else{
+					$runSucc++;
+				}
+				
+				`diff ../../$inputDir/$iName.out $iName.out $diffArgs > $iName.diffs`;	#run the diff
 			}
 			chdir $workingDir;	#go back
 			last;
 		}
 	}
-	if(!$foundExe){
+	if(!$runSucc){
 		print "No exe file found in $current\n";	#if we didn't find an executable 
 	}
-	$tb->load([$current, $foundExe, 0]);
+	$tb->load([$current, $runSucc + $runFail, $runSucc, $runFail]);
 
 	closedir(CURRENT_SUB);
 }
