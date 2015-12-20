@@ -40,8 +40,8 @@ while (my $f = readdir(D)) {
 		my $subName = $1;
     
 		#this cluster makes the submission directory, unzips submission to it, and then deletes the submission .zip
-    		`mkdir \"$assignment/$stdntName\"`;
-    		`unzip \"$assignment/$f\" -d \"$assignment/$stdntName/\"`;
+    	`mkdir \"$assignment/$stdntName\"`;
+    	`unzip \"$assignment/$f\" -d \"$assignment/$stdntName/\"`;
 		`rm \"$assignment/$f\"`;
 	
 		#blackboard generates a submission info file for each submission - move that to the folder we just created

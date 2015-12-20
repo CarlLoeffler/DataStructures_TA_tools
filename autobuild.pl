@@ -42,12 +42,10 @@ while (my $current = readdir(ASSIGNMENT_ROOT)) {
 	my $foundC = 0;
 	while(my $f = readdir(CURRENT_SUB)){
 		if(-d $f){
-			printf("Found folder $f\n");
-			if($f eq "." || $f eq ".."){
-				next;
-			}else{
-				$foundFolder = $f;
-			}
+			next;
+		}elsif(opendir(TESTHANDLE, "$assignment/$current/$f")){	#this is a hack to deal with -d not working right
+			$foundFolder = $f;
+			closedir(TESTHANDLE);
 		}
 		if( $f =~ m/[.]cpp$/){
 			$foundC = 1;
@@ -56,8 +54,7 @@ while (my $current = readdir(ASSIGNMENT_ROOT)) {
 	
 	if($foundC == 0 && !($foundFolder eq "ERR_NONE_FOUND")){
 		print "Found folder but no source files, attempting to unpack folder...\n";
-		print "\ncp $assignment/$current/$foundFolder/* $assignment/$current/\n";
-		#`cp $assignment/$current/$foundFolder/* $assignment/$current/`
+		`cp $assignment/$current/$foundFolder/* $assignment/$current/`
 	}
 	
 
@@ -67,12 +64,12 @@ while (my $current = readdir(ASSIGNMENT_ROOT)) {
 		if(-d $f){
 			next;
 		}
-		print "Found file $f";	# we do this by looking at each file in the submission folder
+		
+		# we do this by looking at each file in the submission folder
 		if( $f =~ m/[.]cpp$/){
-			print ", adding file to build targets";	#and just appending it to $buildTargets string if it's a .cpp file
+			print "added $f to build targets\n";	#and just appending it to $buildTargets string if it's a .cpp file
 			$buildTargets = "$buildTargets $f";
 		}
-		print "\n";
 	}
 
 	print "attempting to build...\n";
