@@ -36,7 +36,7 @@ while (my $f = readdir(D)) {
 		}
 
 		$f =~ /(.*).*_(.+)[.]zip/;	#retrieve student and submission name
-    		my $stdntName = $2;
+    	my $stdntName = $2;
 		my $subName = $1;
     
 		#this cluster makes the submission directory, unzips submission to it, and then deletes the submission .zip

@@ -3,6 +3,8 @@
 #Carl Loeffler
 #11/8/2015
 
+use Text::Table;
+
 use strict;
 use warnings;
 
@@ -20,25 +22,52 @@ opendir(ASSIGNMENT_ROOT, "$assignment") || die "Can't open directory: $!\n";
 
 my $workingDir = getcwd;	#we're going to be moving the working directory around a fair bit later, this is so we can find our way back
 
+my $tb = Text::Table->new("Folder", "Status", "Note");
+
 while (my $current = readdir(ASSIGNMENT_ROOT)) {
+	
 	if($current eq "." || $current eq ".."){
 		next;
 	}
 
-
+	print "\n$current:\n";
+	
 	if(!opendir(CURRENT_SUB, "$assignment/$current")){
 		print "Failed to open directory $current for grading\n";
+		$tb->load([$current, "Failed", "Could not open folder"]);
 		next;
 	}
 
-	print "\n";
+	my $foundFolder = "ERR_NONE_FOUND";
+	my $foundC = 0;
+	while(my $f = readdir(CURRENT_SUB)){
+		if(-d $f){
+			printf("Found folder $f\n");
+			if($f eq "." || $f eq ".."){
+				next;
+			}else{
+				$foundFolder = $f;
+			}
+		}
+		if( $f =~ m/[.]cpp$/){
+			$foundC = 1;
+		}
+	}
+	
+	if($foundC == 0 && !($foundFolder eq "ERR_NONE_FOUND")){
+		print "Found folder but no source files, attempting to unpack folder...\n";
+		print "\ncp $assignment/$current/$foundFolder/* $assignment/$current/\n";
+		#`cp $assignment/$current/$foundFolder/* $assignment/$current/`
+	}
+	
 
 	my $buildTargets = "";	#we're manually building the arguments string for the microsoft compiler
+	rewinddir(CURRENT_SUB);
 	while(my $f = readdir(CURRENT_SUB)){
 		if(-d $f){
 			next;
 		}
-		print "Found file $f in $current";	# we do this by looking at each file in the submission folder
+		print "Found file $f";	# we do this by looking at each file in the submission folder
 		if( $f =~ m/[.]cpp$/){
 			print ", adding file to build targets";	#and just appending it to $buildTargets string if it's a .cpp file
 			$buildTargets = "$buildTargets $f";
@@ -50,9 +79,33 @@ while (my $current = readdir(ASSIGNMENT_ROOT)) {
 	
 	#it's easiest (shortest filepaths in the argument) to run the compiler from the submission directory, so jump there.
 	chdir "$assignment/$current/";
-	`cl /EHsc $buildTargets > compiler.txt`;	#this is where the magic happens (if you have the environment variables set up right)
+	`cl /EHsc /Feprogram $buildTargets > compiler.txt`;	#this is where the magic happens (if you have the environment variables set up right)
+	my $clReturn = ${^CHILD_ERROR_NATIVE};
+	my $status;
+	my $folderMessage;
+	
+	if($clReturn == 0){
+		$status = "Success";
+	}else{
+		$status = "Failed";
+	}
+	
+	if($foundC == 0 && !($foundFolder eq "ERR_NONE_FOUND")){
+		$folderMessage = "Auto-unpacked folder found in submission";
+	}elsif(!($foundFolder eq "ERR_NONE_FOUND")){
+		$folderMessage = "Found folder in submission";
+	}elsif($foundC ==0){
+		$folderMessage = "Folder contained no source files";
+	}else{
+		$folderMessage = " ";
+	}
+	
+	$tb->load([$current, $status, $folderMessage]);
+	
 	chdir $workingDir;	#and this is where we run away from the magic.
 
 	closedir(CURRENT_SUB);
 }
 closedir(ASSIGNMENT_ROOT);
+
+print $tb;
