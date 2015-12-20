@@ -36,7 +36,7 @@ while (my $f = readdir(SAMPLE_INPUTS)){ #build list of sample inputs (this just 
 	}
 }
 
-my $tb = Text::Table->new("Folder", "Total runs" "Succes", "Failure");
+my $tb = Text::Table->new("Folder", "Total runs", "Succes", "Failure");
 
 while (my $current = readdir(ASSIGNMENT_ROOT)) {
 	if($current eq "." || $current eq ".."){
