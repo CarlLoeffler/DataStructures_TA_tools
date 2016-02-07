@@ -50,13 +50,7 @@ while (my $current = readdir(ASSIGNMENT_ROOT)) {
 		if( $f =~ m/[.]cpp$/){
 			$foundC = 1;
 		}
-	}
-	
-	if($foundC == 0 && !($foundFolder eq "ERR_NONE_FOUND")){
-		print "Found folder but no source files, attempting to unpack folder...\n";
-		`cp $assignment/$current/$foundFolder/* $assignment/$current/`
-	}
-	
+	}	
 
 	my $buildTargets = "";	#we're manually building the arguments string for the microsoft compiler
 	rewinddir(CURRENT_SUB);
