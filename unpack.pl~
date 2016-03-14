@@ -48,8 +48,8 @@ while (my $f = readdir(D)) {
 		print "Starting unpack for $stdntName...\n";
 
 		#this cluster makes the submission directory, unzips submission to it, and then deletes the submission .zip
-    		`mkdir \"$assignment/$stdntName\"`;
-    		`unzip \"$assignment/$f\" -d \"$assignment/$stdntName/\"`;
+    	`mkdir \"$assignment/$stdntName\"`;
+    	`unzip \"$assignment/$f\" -d \"$assignment/$stdntName/\"`;
 		`rm \"$assignment/$f\"`;
 	
 		#blackboard generates a submission info file for each submission - move that to the folder we just created
@@ -71,9 +71,7 @@ while (my $f = readdir(D)) {
 				if(-d $f){
 					next;
 				}elsif(opendir(TESTHANDLE, "$assignment/$current/$f")){	#this is a hack to deal with -d not working right
-					if($f eq "__MACOSX"){	#I don't know where this comes from but it's irritatingly common, so let's clean up
-						`rm -r $assignment/$current/$f`;
-					}else{
+					if(!($f eq "__MACOSX")){	#I don't know where this comes from but it's irritatingly common
 						$foundFolder = $f;
 						closedir(TESTHANDLE);
 					}
@@ -86,7 +84,6 @@ while (my $f = readdir(D)) {
 			if($foundC == 0 && !($foundFolder eq "ERR_NONE_FOUND")){
 				print "Found folder $foundFolder but no source files, attempting to unpack folder...\n";
 				`cp $assignment/$current/$foundFolder/* $assignment/$current/`;
-				`rm -r $assignment/$current/$foundFolder/`;	#delete folder once we've moved contents up a level
 				$containedFolder = 1;
 			}
 
